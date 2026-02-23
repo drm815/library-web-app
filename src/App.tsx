@@ -25,19 +25,34 @@ const App: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [isRequesting, setIsRequesting] = useState<string | null>(null);
 
-  // GAS 팝업 구글 로그인
+  // GAS 팝업 로그인
   const handleLogin = () => {
+    localStorage.removeItem('gas_login');
     const popup = window.open(`${GAS_URL}?action=login`, 'googleLogin', 'width=500,height=600');
 
+    // postMessage 수신
     const onMessage = (event: MessageEvent) => {
       if (event.data?.email) {
         setUser({ name: event.data.name, email: event.data.email });
         window.removeEventListener('message', onMessage);
-        popup?.close();
+        clearInterval(pollTimer);
       }
     };
-
     window.addEventListener('message', onMessage);
+
+    // 팝업이 닫혔을 때 localStorage 폴백
+    const pollTimer = setInterval(() => {
+      if (popup?.closed) {
+        clearInterval(pollTimer);
+        window.removeEventListener('message', onMessage);
+        const stored = localStorage.getItem('gas_login');
+        if (stored) {
+          const { name, email } = JSON.parse(stored);
+          if (email) setUser({ name, email });
+          localStorage.removeItem('gas_login');
+        }
+      }
+    }, 500);
   };
 
   const handleLogout = () => setUser(null);
