@@ -24,35 +24,17 @@ const App: React.FC = () => {
   const [results, setResults] = useState<BookInfo[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isRequesting, setIsRequesting] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginForm, setLoginForm] = useState({ name: '', email: '' });
 
-  // GAS 팝업 로그인
-  const handleLogin = () => {
-    localStorage.removeItem('gas_login');
-    const popup = window.open(`${GAS_URL}?action=login`, 'googleLogin', 'width=500,height=600');
+  const handleLogin = () => setShowLoginModal(true);
 
-    // postMessage 수신
-    const onMessage = (event: MessageEvent) => {
-      if (event.data?.email) {
-        setUser({ name: event.data.name, email: event.data.email });
-        window.removeEventListener('message', onMessage);
-        clearInterval(pollTimer);
-      }
-    };
-    window.addEventListener('message', onMessage);
-
-    // 팝업이 닫혔을 때 localStorage 폴백
-    const pollTimer = setInterval(() => {
-      if (popup?.closed) {
-        clearInterval(pollTimer);
-        window.removeEventListener('message', onMessage);
-        const stored = localStorage.getItem('gas_login');
-        if (stored) {
-          const { name, email } = JSON.parse(stored);
-          if (email) setUser({ name, email });
-          localStorage.removeItem('gas_login');
-        }
-      }
-    }, 500);
+  const handleLoginSubmit = () => {
+    const { name, email } = loginForm;
+    if (!name.trim() || !email.trim()) { alert('이름과 이메일을 모두 입력해주세요.'); return; }
+    setUser({ name: name.trim(), email: email.trim() });
+    setShowLoginModal(false);
+    setLoginForm({ name: '', email: '' });
   };
 
   const handleLogout = () => setUser(null);
@@ -154,6 +136,53 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#050a1a] text-[#f0f4f8] pb-24 font-['Pretendard']">
+
+      {/* 로그인 모달 */}
+      <AnimatePresence>
+        {showLoginModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-5"
+            onClick={() => setShowLoginModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-[#0d1530] border border-white/10 rounded-3xl p-8 w-full max-w-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-lg font-bold mb-1">신청자 정보 입력</h2>
+              <p className="text-xs text-slate-400 mb-6">희망도서 신청을 위해 정보를 입력해주세요.</p>
+              <label className="text-xs text-slate-400 block mb-1.5">이름</label>
+              <input
+                type="text"
+                placeholder="홍길동"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-sky-400/50 mb-4"
+                value={loginForm.name}
+                onChange={(e) => setLoginForm(f => ({ ...f, name: e.target.value }))}
+              />
+              <label className="text-xs text-slate-400 block mb-1.5">이메일</label>
+              <input
+                type="email"
+                placeholder="hong@school.ac.kr"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-sky-400/50 mb-6"
+                value={loginForm.email}
+                onChange={(e) => setLoginForm(f => ({ ...f, email: e.target.value }))}
+                onKeyDown={(e) => e.key === 'Enter' && handleLoginSubmit()}
+              />
+              <button
+                onClick={handleLoginSubmit}
+                className="w-full bg-sky-400 text-slate-900 font-bold py-3 rounded-xl text-sm"
+              >
+                확인
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* 고정 헤더 */}
       <header className="sticky top-0 z-40 p-5 bg-[#050a1a]/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-md mx-auto flex justify-between items-center">
