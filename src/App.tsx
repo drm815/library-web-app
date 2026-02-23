@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Book, User, History, Home, Plus, Loader2, Bookmark, CheckCircle2 } from 'lucide-react';
+import { Search, User, History, Home, Plus, Loader2, Bookmark, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- 설정 ---
