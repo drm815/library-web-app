@@ -25,9 +25,19 @@ const App: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [isRequesting, setIsRequesting] = useState<string | null>(null);
 
-  // 구글 로그인 시뮬레이션 (GAS 연동시 GAS 로그인 창 활성화 가능)
+  // GAS 팝업 구글 로그인
   const handleLogin = () => {
-    setUser({ name: "사용자", email: "user@school.ac.kr" });
+    const popup = window.open(`${GAS_URL}?action=login`, 'googleLogin', 'width=500,height=600');
+
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.email) {
+        setUser({ name: event.data.name, email: event.data.email });
+        window.removeEventListener('message', onMessage);
+        popup?.close();
+      }
+    };
+
+    window.addEventListener('message', onMessage);
   };
 
   const handleLogout = () => setUser(null);
