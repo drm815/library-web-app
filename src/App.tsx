@@ -19,22 +19,24 @@ interface BookInfo {
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'history'>('home');
-  const [user, setUser] = useState<{ name: string, email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string, email: string, role: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<BookInfo[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isRequesting, setIsRequesting] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [loginForm, setLoginForm] = useState({ name: '', email: '' });
+  const [loginForm, setLoginForm] = useState({ name: '', email: '', role: '학생', grade: '', classNum: '' });
 
   const handleLogin = () => setShowLoginModal(true);
 
   const handleLoginSubmit = () => {
-    const { name, email } = loginForm;
+    const { name, email, role, grade, classNum } = loginForm;
     if (!name.trim() || !email.trim()) { alert('이름과 이메일을 모두 입력해주세요.'); return; }
-    setUser({ name: name.trim(), email: email.trim() });
+    if (role === '학생' && (!grade.trim() || !classNum.trim())) { alert('학년과 반을 입력해주세요.'); return; }
+    const roleLabel = role === '교사' ? '교사' : `${grade}학년 ${classNum}반`;
+    setUser({ name: name.trim(), email: email.trim(), role: roleLabel });
     setShowLoginModal(false);
-    setLoginForm({ name: '', email: '' });
+    setLoginForm({ name: '', email: '', role: '학생', grade: '', classNum: '' });
   };
 
   const handleLogout = () => setUser(null);
@@ -119,7 +121,8 @@ const App: React.FC = () => {
         body: JSON.stringify({
           ...book,
           requester: user.email,
-          requesterName: user.name
+          requesterName: user.name,
+          requesterRole: user.role
         }),
         mode: 'no-cors' // CORS 이슈 방지를 위해 no-cors 사용
       });
@@ -156,6 +159,49 @@ const App: React.FC = () => {
             >
               <h2 className="text-lg font-bold mb-1">신청자 정보 입력</h2>
               <p className="text-xs text-slate-400 mb-6">희망도서 신청을 위해 정보를 입력해주세요.</p>
+
+              {/* 역할 선택 */}
+              <label className="text-xs text-slate-400 block mb-1.5">구분</label>
+              <div className="flex gap-2 mb-4">
+                {['학생', '교사'].map(r => (
+                  <button
+                    key={r}
+                    onClick={() => setLoginForm(f => ({ ...f, role: r }))}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all ${loginForm.role === r ? 'bg-sky-400 text-slate-900 border-sky-400' : 'bg-white/5 text-slate-400 border-white/10'}`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+
+              {/* 학생: 학년/반 */}
+              {loginForm.role === '학생' && (
+                <div className="flex gap-2 mb-4">
+                  <div className="flex-1">
+                    <label className="text-xs text-slate-400 block mb-1.5">학년</label>
+                    <input
+                      type="number"
+                      placeholder="1"
+                      min="1" max="6"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-sky-400/50"
+                      value={loginForm.grade}
+                      onChange={(e) => setLoginForm(f => ({ ...f, grade: e.target.value }))}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs text-slate-400 block mb-1.5">반</label>
+                    <input
+                      type="number"
+                      placeholder="1"
+                      min="1"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-sky-400/50"
+                      value={loginForm.classNum}
+                      onChange={(e) => setLoginForm(f => ({ ...f, classNum: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              )}
+
               <label className="text-xs text-slate-400 block mb-1.5">이름</label>
               <input
                 type="text"
