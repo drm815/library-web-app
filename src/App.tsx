@@ -25,18 +25,18 @@ const App: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [isRequesting, setIsRequesting] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [loginForm, setLoginForm] = useState({ name: '', email: '', role: '학생', grade: '', classNum: '' });
+  const [loginForm, setLoginForm] = useState({ name: '', role: '학생', grade: '', classNum: '' });
 
   const handleLogin = () => setShowLoginModal(true);
 
   const handleLoginSubmit = () => {
-    const { name, email, role, grade, classNum } = loginForm;
-    if (!name.trim() || !email.trim()) { alert('이름과 이메일을 모두 입력해주세요.'); return; }
+    const { name, role, grade, classNum } = loginForm;
+    if (!name.trim()) { alert('이름을 입력해주세요.'); return; }
     if (role !== '교직원' && (!grade.trim() || !classNum.trim())) { alert('학년과 반을 입력해주세요.'); return; }
     const roleLabel = role === '교직원' ? '교직원' : `${grade}학년 ${classNum}반`;
-    setUser({ name: name.trim(), email: email.trim(), role: roleLabel });
+    setUser({ name: name.trim(), email: '', role: roleLabel });
     setShowLoginModal(false);
-    setLoginForm({ name: '', email: '', role: '학생', grade: '', classNum: '' });
+    setLoginForm({ name: '', role: '학생', grade: '', classNum: '' });
   };
 
   const handleLogout = () => setUser(null);
@@ -120,7 +120,7 @@ const App: React.FC = () => {
         method: 'POST',
         body: JSON.stringify({
           ...book,
-          requester: user.email,
+          requester: user.name,
           requesterName: user.name,
           requesterRole: user.role
         }),
@@ -210,15 +210,6 @@ const App: React.FC = () => {
                 value={loginForm.name}
                 onChange={(e) => setLoginForm(f => ({ ...f, name: e.target.value }))}
               />
-              <label className="text-xs text-slate-400 block mb-1.5">이메일</label>
-              <input
-                type="email"
-                placeholder="hong@school.ac.kr"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-sky-400/50 mb-6"
-                value={loginForm.email}
-                onChange={(e) => setLoginForm(f => ({ ...f, email: e.target.value }))}
-                onKeyDown={(e) => e.key === 'Enter' && handleLoginSubmit()}
-              />
               <button
                 onClick={handleLoginSubmit}
                 className="w-full bg-sky-400 text-slate-900 font-bold py-3 rounded-xl text-sm"
@@ -244,7 +235,7 @@ const App: React.FC = () => {
             </div>
           ) : (
             <button onClick={handleLogin} className="text-xs font-bold bg-sky-400 text-slate-900 px-4 py-2 rounded-full shadow-[0_0_15px_rgba(56,189,248,0.3)]">
-              구글 로그인
+              신청자 등록
             </button>
           )}
         </div>
