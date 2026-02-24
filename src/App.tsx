@@ -90,10 +90,16 @@ const App: React.FC = () => {
         }));
 
         // 3. 데이터 통합: 이미 보유한 도서는 제외하거나 표시
+        const normalize = (s: string) => s.replace(/[\s\:\-\(\)（）:·]/g, '').toLowerCase();
         const combined = [...existingBooks];
         aladinItems.forEach((item: BookInfo) => {
-          // ISBN 기준으로 중복 체크
-          const isDuplicate = combined.some(b => b.isbn === item.isbn || (b.title === item.title && b.author === item.author));
+          // ISBN 또는 제목 포함 여부로 중복 체크 (부제목 대응)
+          const normItem = normalize(item.title);
+          const isDuplicate = combined.some(b => {
+            if (b.isbn === item.isbn) return true;
+            const normB = normalize(b.title);
+            return normItem.includes(normB) || normB.includes(normItem);
+          });
           if (!isDuplicate) {
             combined.push(item);
           }
