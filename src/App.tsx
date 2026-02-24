@@ -32,8 +32,8 @@ const App: React.FC = () => {
   const handleLoginSubmit = () => {
     const { name, email, role, grade, classNum } = loginForm;
     if (!name.trim() || !email.trim()) { alert('이름과 이메일을 모두 입력해주세요.'); return; }
-    if (role === '학생' && (!grade.trim() || !classNum.trim())) { alert('학년과 반을 입력해주세요.'); return; }
-    const roleLabel = role === '교사' ? '교사' : `${grade}학년 ${classNum}반`;
+    if (role !== '교직원' && (!grade.trim() || !classNum.trim())) { alert('학년과 반을 입력해주세요.'); return; }
+    const roleLabel = role === '교직원' ? '교직원' : `${grade}학년 ${classNum}반`;
     setUser({ name: name.trim(), email: email.trim(), role: roleLabel });
     setShowLoginModal(false);
     setLoginForm({ name: '', email: '', role: '학생', grade: '', classNum: '' });
@@ -163,7 +163,7 @@ const App: React.FC = () => {
               {/* 역할 선택 */}
               <label className="text-xs text-slate-400 block mb-1.5">구분</label>
               <div className="flex gap-2 mb-4">
-                {['학생', '교사'].map(r => (
+                {['학생', '교직원'].map(r => (
                   <button
                     key={r}
                     onClick={() => setLoginForm(f => ({ ...f, role: r }))}
@@ -175,7 +175,7 @@ const App: React.FC = () => {
               </div>
 
               {/* 학생: 학년/반 */}
-              {loginForm.role === '학생' && (
+              {loginForm.role !== '교직원' && (
                 <div className="flex gap-2 mb-4">
                   <div className="flex-1">
                     <label className="text-xs text-slate-400 block mb-1.5">학년</label>
