@@ -50,7 +50,7 @@ const App: React.FC = () => {
       // 1. GAS를 통한 보유 도서 검색 (구글 드라이브 엑셀 참조)
       let existingBooks: BookInfo[] = [];
       try {
-        const gasResponse = await fetch(`${GAS_URL}?query=${encodeURIComponent(searchQuery)}`);
+        const gasResponse = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`${GAS_URL}?query=${encodeURIComponent(searchQuery)}`)}`);
         const gasData = await gasResponse.json();
         if (Array.isArray(gasData)) {
           existingBooks = gasData.map(item => ({
