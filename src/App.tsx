@@ -24,6 +24,8 @@ const App: React.FC = () => {
   const [results, setResults] = useState<BookInfo[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isRequesting, setIsRequesting] = useState<string | null>(null);
+  const [history, setHistory] = useState<{ date: string, role: string, title: string, author: string, publisher: string }[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loginForm, setLoginForm] = useState({ name: '', role: '학생', grade: '', classNum: '' });
 
@@ -39,7 +41,21 @@ const App: React.FC = () => {
     setLoginForm({ name: '', role: '학생', grade: '', classNum: '' });
   };
 
-  const handleLogout = () => setUser(null);
+  const handleLogout = () => { setUser(null); setHistory([]); };
+
+  const fetchHistory = async (name: string) => {
+    setIsLoadingHistory(true);
+    try {
+      const url = `${GAS_URL}?action=history&name=${encodeURIComponent(name)}`;
+      const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+      const data = await res.json();
+      if (Array.isArray(data)) setHistory(data);
+    } catch (e) {
+      console.error('신청내역 조회 실패:', e);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
 
   const searchBooks = async () => {
     if (!searchQuery.trim()) return;
@@ -351,10 +367,48 @@ const App: React.FC = () => {
             </div>
           </>
         ) : (
-          <div className="py-20 text-center opacity-40">
-            <History size={48} className="mx-auto mb-4" />
-            <p className="text-sm font-medium">신청 내역이 없습니다.</p>
-          </div>
+          <>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+              <h2 className="text-2xl font-bold mb-1">신청현황</h2>
+              <p className="text-sm text-slate-400">{user ? `${user.name} 님의 희망도서 신청 내역` : '로그인 후 확인할 수 있어요.'}</p>
+            </motion.div>
+
+            {!user ? (
+              <div className="py-20 text-center opacity-40">
+                <History size={48} className="mx-auto mb-4" />
+                <p className="text-sm font-medium">로그인이 필요합니다.</p>
+              </div>
+            ) : isLoadingHistory ? (
+              <div className="py-20 text-center opacity-40">
+                <Loader2 size={36} className="mx-auto mb-4 animate-spin" />
+                <p className="text-sm font-medium">불러오는 중...</p>
+              </div>
+            ) : history.length === 0 ? (
+              <div className="py-20 text-center opacity-40">
+                <History size={48} className="mx-auto mb-4" />
+                <p className="text-sm font-medium">신청 내역이 없습니다.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {history.map((item, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="bg-white/5 border border-white/10 rounded-2xl p-4"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-sm font-bold flex-grow pr-2">{item.title}</h3>
+                      <span className="text-[10px] bg-sky-400/10 text-sky-400 font-bold px-2 py-0.5 rounded-md flex-shrink-0">{item.role}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500">{item.author} | {item.publisher}</p>
+                    <p className="text-[10px] text-slate-600 mt-1">{new Date(item.date).toLocaleDateString('ko-KR')}</p>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </main>
 
@@ -368,7 +422,7 @@ const App: React.FC = () => {
           <span className="text-[10px] font-bold">홈</span>
         </button>
         <button
-          onClick={() => setActiveTab('history')}
+          onClick={() => { setActiveTab('history'); if (user) fetchHistory(user.name); }}
           className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'history' ? 'text-sky-400' : 'text-slate-500'}`}
         >
           <History size={activeTab === 'history' ? 24 : 22} />
