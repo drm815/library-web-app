@@ -67,7 +67,7 @@ const App: React.FC = () => {
 
       // 2. 알라딘 미보유 도서 검색
       const baseUrl = `https://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${ALADIN_API_KEY}&Query=${encodeURIComponent(searchQuery)}&QueryType=Keyword&MaxResults=10&start=1&SearchTarget=Book&output=js&Version=20131101`;
-      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(baseUrl)}`;
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(baseUrl)}`;
 
       const response = await fetch(proxyUrl);
       const text = await response.text();
