@@ -81,7 +81,7 @@ const App: React.FC = () => {
           title: item.title.replace(/<[^>]*>?/gm, ''),
           author: item.author.replace(/<[^>]*>?/gm, ''),
           publisher: item.publisher,
-          price: item.priceSales,
+          price: item.priceStandard,
           isbn: item.isbn13 || item.isbn,
           coverUrl: item.cover,
           isExisting: false
