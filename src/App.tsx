@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // --- 설정 ---
 // Google Apps Script (GAS) URL - 나중에 배포 후 여기에 넣으세요.
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwMe4EXDkYcxlO8C8Jw9DEULNqd4mKFv06xw_RcqM2neSr8vYeVRlSJzsztZRtmTVbPRQ/exec";
-const ALADIN_API_KEY = "ttbbinzzang1544002";
+const ALADIN_API_KEY = "ttbwehada20211856001";
 
 interface BookInfo {
   title: string;
