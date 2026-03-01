@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #030712;
-  --color-foreground: #f8fafc;
-  --color-primary: #38bdf8;
-  --color-accent: #c084fc;
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+  --color-primary: #0ea5e9;
+  --color-accent: #6366f1;
 }
 
 @layer base {
@@ -12,30 +12,31 @@
     @apply bg-background text-foreground min-h-screen overflow-x-hidden;
     font-family: sans-serif;
     background-image:
-      radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
-      radial-gradient(circle at 90% 90%, rgba(192, 132, 252, 0.05) 0%, transparent 40%);
+      radial-gradient(circle at 10% 10%, rgba(14, 165, 233, 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 90% 90%, rgba(99, 102, 241, 0.08) 0%, transparent 40%);
   }
 }
 
 @layer components {
   .glass {
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
   }
 
   .btn-neon {
     background-color: var(--color-primary);
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
     transition: all 0.3s ease;
   }
 
   .btn-neon:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.3);
   }
 }
 
 .bottom-nav {
-  @apply fixed bottom-0 left-0 right-0 h-20 bg-slate-950/90 backdrop-blur-2xl border-t border-white/5 flex justify-around items-center pb-5 z-50;
+  @apply fixed bottom-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-2xl border-t border-slate-200/50 flex justify-around items-center pb-5 z-50;
 }

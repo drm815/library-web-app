@@ -160,7 +160,7 @@ const App: React.FC = () => {
 
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#050a1a] text-[#f0f4f8] pb-24 font-['Pretendard']">
+    <div className="flex flex-col min-h-screen bg-background text-foreground pb-24 font-['Pretendard']">
 
       {/* 로그인 모달 */}
       <AnimatePresence>
@@ -176,20 +176,20 @@ const App: React.FC = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0d1530] border border-white/10 rounded-3xl p-8 w-full max-w-sm"
+              className="glass rounded-3xl p-8 w-full max-w-sm shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-lg font-bold mb-1">신청자 정보 입력</h2>
-              <p className="text-xs text-slate-400 mb-6">희망도서 신청을 위해 정보를 입력해주세요.</p>
+              <p className="text-xs text-slate-500 mb-6">희망도서 신청을 위해 정보를 입력해주세요.</p>
 
               {/* 역할 선택 */}
-              <label className="text-xs text-slate-400 block mb-1.5">구분</label>
+              <label className="text-xs text-slate-500 block mb-1.5">구분</label>
               <div className="flex gap-2 mb-4">
                 {['학생', '교직원'].map(r => (
                   <button
                     key={r}
                     onClick={() => setLoginForm(f => ({ ...f, role: r }))}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all ${loginForm.role === r ? 'bg-sky-400 text-slate-900 border-sky-400' : 'bg-white/5 text-slate-400 border-white/10'}`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all ${loginForm.role === r ? 'bg-primary text-white border-primary shadow-lg shadow-sky-200' : 'bg-slate-100 text-slate-400 border-slate-200'}`}
                   >
                     {r}
                   </button>
@@ -200,23 +200,23 @@ const App: React.FC = () => {
               {loginForm.role !== '교직원' && (
                 <div className="flex gap-2 mb-4">
                   <div className="flex-1">
-                    <label className="text-xs text-slate-400 block mb-1.5">학년</label>
+                    <label className="text-xs text-slate-500 block mb-1.5">학년</label>
                     <input
                       type="number"
                       placeholder="1"
                       min="1" max="6"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-sky-400/50"
+                      className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:bg-white transition-all"
                       value={loginForm.grade}
                       onChange={(e) => setLoginForm(f => ({ ...f, grade: e.target.value }))}
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-xs text-slate-400 block mb-1.5">반</label>
+                    <label className="text-xs text-slate-500 block mb-1.5">반</label>
                     <input
                       type="number"
                       placeholder="1"
                       min="1"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-sky-400/50"
+                      className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:bg-white transition-all"
                       value={loginForm.classNum}
                       onChange={(e) => setLoginForm(f => ({ ...f, classNum: e.target.value }))}
                     />
@@ -224,17 +224,17 @@ const App: React.FC = () => {
                 </div>
               )}
 
-              <label className="text-xs text-slate-400 block mb-1.5">이름</label>
+              <label className="text-xs text-slate-500 block mb-1.5">이름</label>
               <input
                 type="text"
                 placeholder="홍길동"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-sky-400/50 mb-4"
+                className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:bg-white transition-all mb-4"
                 value={loginForm.name}
                 onChange={(e) => setLoginForm(f => ({ ...f, name: e.target.value }))}
               />
               <button
                 onClick={handleLoginSubmit}
-                className="w-full bg-sky-400 text-slate-900 font-bold py-3 rounded-xl text-sm"
+                className="w-full bg-primary text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-sky-200 hover:bg-sky-500 transition-all"
               >
                 확인
               </button>
@@ -243,20 +243,20 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
       {/* 고정 헤더 */}
-      <header className="sticky top-0 z-40 p-5 bg-[#050a1a]/80 backdrop-blur-xl border-b border-white/5">
+      <header className="sticky top-0 z-40 p-5 bg-white/70 backdrop-blur-xl border-b border-slate-200/50">
         <div className="max-w-md mx-auto flex justify-between items-center">
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight">MY LAB <span className="text-sky-400">WEB</span></h1>
+            <h1 className="text-xl font-extrabold tracking-tight text-slate-800">MY LAB <span className="text-primary">WEB</span></h1>
           </div>
           {user ? (
-            <div onClick={handleLogout} className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-sky-400/20 cursor-pointer">
-              <span className="text-xs font-medium text-sky-400">{user.name} 님</span>
-              <div className="w-6 h-6 rounded-full bg-sky-400 flex items-center justify-center">
-                <User size={14} className="text-slate-900" />
+            <div onClick={handleLogout} className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full border border-primary/20 cursor-pointer">
+              <span className="text-xs font-medium text-primary">{user.name} 님</span>
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                <User size={14} className="text-white" />
               </div>
             </div>
           ) : (
-            <button onClick={handleLogin} className="text-xs font-bold bg-sky-400 text-slate-900 px-4 py-2 rounded-full shadow-[0_0_15px_rgba(56,189,248,0.3)]">
+            <button onClick={handleLogin} className="text-xs font-bold bg-primary text-white px-4 py-2 rounded-full shadow-lg shadow-sky-200 hover:bg-sky-500 transition-all">
               신청자 등록
             </button>
           )}
@@ -272,13 +272,13 @@ const App: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               className="mb-10 text-center"
             >
-              <h2 className="text-2xl font-bold mb-2">어떤 책을 원하시나요?</h2>
-              <p className="text-sm text-slate-400">보유 도서를 검색하고, 없는 책을 신청하세요.</p>
+              <h2 className="text-2xl font-bold mb-2 text-slate-800">어떤 책을 원하시나요?</h2>
+              <p className="text-sm text-slate-500">보유 도서를 검색하고, 없는 책을 신청하세요.</p>
             </motion.div>
 
             {/* 검색창 - 반응형 & 겹침 방지 */}
             <div className="relative mb-8 group">
-              <div className="flex items-center bg-white/5 border border-white/10 rounded-2xl focus-within:border-sky-400/50 transition-all p-1.5">
+              <div className="flex items-center bg-white border border-slate-200 rounded-2xl focus-within:border-primary/50 shadow-sm focus-within:shadow-md transition-all p-1.5">
                 <div className="pl-3 pr-2 text-slate-500">
                   <Search size={20} />
                 </div>
@@ -292,7 +292,7 @@ const App: React.FC = () => {
                 />
                 <button
                   onClick={searchBooks}
-                  className="bg-sky-400 hover:bg-sky-300 text-slate-900 h-12 px-6 rounded-xl font-bold text-xs transition-all flex items-center gap-2"
+                  className="bg-primary hover:bg-sky-500 text-white h-12 px-6 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shadow-lg shadow-sky-100"
                   disabled={isSearching}
                 >
                   {isSearching ? <Loader2 className="animate-spin" size={16} /> : "검색"}
@@ -309,9 +309,9 @@ const App: React.FC = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-4 flex gap-4 hover:border-sky-400/30 transition-all"
+                    className="glass rounded-3xl p-4 flex gap-4 hover:border-primary/50 hover:shadow-xl transition-all"
                   >
-                    <div className="w-20 h-28 flex-shrink-0 bg-slate-800 rounded-xl overflow-hidden shadow-xl border border-white/5">
+                    <div className="w-20 h-28 flex-shrink-0 bg-slate-100 rounded-xl overflow-hidden shadow-md border border-slate-200">
                       <img src={book.coverUrl} className="w-full h-full object-cover" alt={book.title} />
                     </div>
                     <div className="flex flex-col justify-between py-1 flex-grow min-w-0">
@@ -319,19 +319,19 @@ const App: React.FC = () => {
                         <div className="flex justify-between gap-2">
                           <h3 className="text-sm font-bold truncate leading-tight flex-grow">{book.title}</h3>
                           {book.isExisting ? (
-                            <Bookmark size={14} className="text-emerald-400 flex-shrink-0" />
+                            <Bookmark size={14} className="text-emerald-500 flex-shrink-0" />
                           ) : (
-                            <Plus size={14} className="text-sky-400 flex-shrink-0" />
+                            <Plus size={14} className="text-primary flex-shrink-0" />
                           )}
                         </div>
                         <p className="text-[11px] text-slate-500 mt-1 truncate">{book.author} | {book.publisher}</p>
                         {book.isExisting ? (
-                          <span className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-400/10 text-emerald-400 text-[10px] font-bold rounded-md">
+                          <span className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-md border border-emerald-100">
                             <CheckCircle2 size={10} />
                             도서관 보유 중
                           </span>
                         ) : (
-                          <span className="mt-2 inline-block px-2 py-0.5 bg-sky-400/10 text-sky-400 text-[10px] font-bold rounded-md">
+                          <span className="mt-2 inline-block px-2 py-0.5 bg-sky-50 text-primary text-[10px] font-bold rounded-md border border-sky-100">
                             미보유 (신청 가능)
                           </span>
                         )}
@@ -340,7 +340,7 @@ const App: React.FC = () => {
                       {!book.isExisting && (
                         <button
                           onClick={() => requestBook(book)}
-                          className="mt-3 w-full py-2.5 rounded-xl bg-sky-400 text-slate-900 text-xs font-bold hover:bg-sky-300 transition-all flex items-center justify-center gap-2"
+                          className="mt-3 w-full py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-sky-500 transition-all flex items-center justify-center gap-2 shadow-sm"
                           disabled={isRequesting === book.isbn}
                         >
                           {isRequesting === book.isbn ? (
@@ -369,8 +369,8 @@ const App: React.FC = () => {
         ) : (
           <>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-              <h2 className="text-2xl font-bold mb-1">신청현황</h2>
-              <p className="text-sm text-slate-400">{user ? `${user.name} 님의 희망도서 신청 내역` : '로그인 후 확인할 수 있어요.'}</p>
+              <h2 className="text-2xl font-bold mb-1 text-slate-800">신청현황</h2>
+              <p className="text-sm text-slate-500">{user ? `${user.name} 님의 희망도서 신청 내역` : '로그인 후 확인할 수 있어요.'}</p>
             </motion.div>
 
             {!user ? (
@@ -396,11 +396,11 @@ const App: React.FC = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="bg-white/5 border border-white/10 rounded-2xl p-4"
+                    className="glass border-slate-200/50 rounded-2xl p-4"
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-sm font-bold flex-grow pr-2">{item.title}</h3>
-                      <span className="text-[10px] bg-sky-400/10 text-sky-400 font-bold px-2 py-0.5 rounded-md flex-shrink-0">{item.role}</span>
+                      <h3 className="text-sm font-bold flex-grow pr-2 text-slate-800">{item.title}</h3>
+                      <span className="text-[10px] bg-sky-50 text-primary font-bold px-2 py-0.5 rounded-md flex-shrink-0 border border-sky-100">{item.role}</span>
                     </div>
                     <p className="text-[11px] text-slate-500">{item.author} | {item.publisher}</p>
                     <p className="text-[10px] text-slate-600 mt-1">{new Date(item.date).toLocaleDateString('ko-KR')}</p>
@@ -413,17 +413,17 @@ const App: React.FC = () => {
       </main>
 
       {/* 네이티브 스타일 하단 바 */}
-      <nav className="fixed bottom-0 left-0 right-0 h-20 bg-[#0a0f1e]/90 backdrop-blur-2xl border-t border-white/5 flex justify-around items-center px-6 pb-4">
+      <nav className="fixed bottom-0 left-0 right-0 h-20 bg-white/70 backdrop-blur-2xl border-t border-slate-200/50 flex justify-around items-center px-6 pb-4">
         <button
           onClick={() => setActiveTab('home')}
-          className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'home' ? 'text-sky-400' : 'text-slate-500'}`}
+          className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'home' ? 'text-primary' : 'text-slate-400'}`}
         >
           <Home size={activeTab === 'home' ? 24 : 22} />
           <span className="text-[10px] font-bold">홈</span>
         </button>
         <button
           onClick={() => { setActiveTab('history'); if (user) fetchHistory(user.name); }}
-          className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'history' ? 'text-sky-400' : 'text-slate-500'}`}
+          className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'history' ? 'text-primary' : 'text-slate-400'}`}
         >
           <History size={activeTab === 'history' ? 24 : 22} />
           <span className="text-[10px] font-bold">신청현황</span>
