@@ -296,17 +296,19 @@ const App: React.FC = () => {
     }
   };
 
-  const searchBooks = async () => {
-    if (searchQuery.replace(/\s/g, '').length < 2) {
+  const searchBooks = async (overrideQuery?: string) => {
+    const q = overrideQuery ?? searchQuery;
+    if (q.replace(/\s/g, '').length < 2) {
       alert('2글자 이상 입력해주세요.');
       return;
     }
+    if (overrideQuery) setSearchQuery(overrideQuery);
     setIsSearching(true);
     setResults([]);
 
     try {
-      const gasProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`${GAS_URL}?query=${encodeURIComponent(searchQuery)}`)}`;
-      const baseUrl = `https://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${aladinKey}&Query=${encodeURIComponent(searchQuery)}&QueryType=Title&MaxResults=10&start=1&SearchTarget=Book&output=js&Version=20131101`;
+      const gasProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`${GAS_URL}?query=${encodeURIComponent(q)}`)}`;
+      const baseUrl = `https://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${aladinKey}&Query=${encodeURIComponent(q)}&QueryType=Title&MaxResults=10&start=1&SearchTarget=Book&output=js&Version=20131101`;
       const aladinProxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(baseUrl)}`;
 
       // 1 & 2. GAS + 알라딘 병렬 fetch
@@ -350,7 +352,7 @@ const App: React.FC = () => {
         }
       });
       setRecentSearches(prev => {
-        const updated = [searchQuery, ...prev.filter(s => s !== searchQuery)].slice(0, 5);
+        const updated = [q, ...prev.filter(s => s !== q)].slice(0, 5);
         localStorage.setItem('recentSearches', JSON.stringify(updated));
         return updated;
       });
@@ -491,7 +493,7 @@ const App: React.FC = () => {
                   onKeyDown={(e) => e.key === 'Enter' && searchBooks()}
                 />
                 <button
-                  onClick={searchBooks}
+                  onClick={() => searchBooks()}
                   className="bg-primary hover:bg-sky-500 text-white h-12 px-6 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shadow-lg shadow-sky-100"
                   disabled={isSearching}
                 >
@@ -516,7 +518,7 @@ const App: React.FC = () => {
                   {recentSearches.map(s => (
                     <button
                       key={s}
-                      onClick={() => { setSearchQuery(s); setTimeout(searchBooks, 0); }}
+                      onClick={() => searchBooks(s)}
                       className="px-3 py-1.5 bg-slate-100 text-slate-600 text-xs font-medium rounded-full hover:bg-sky-50 hover:text-primary transition-all"
                     >
                       {s}
