@@ -49,6 +49,17 @@ function doGet(e) {
       `);
       return html;
     }
+// 중복 신청 체크
+    if (action === 'checkDuplicate') {
+      const isbn = e.parameter.isbn || '';
+      const ss = SpreadsheetApp.openById('1Zm6z-dIIzh3LEtuOzZk-yZmQkyAGbdb7dULvaghbWpU');
+      const sheet = ss.getSheetByName('신청내역');
+      const data = sheet.getDataRange().getValues();
+      const isDuplicate = data.slice(1).some(row => String(row[7]) === String(isbn));
+      return ContentService.createTextOutput(JSON.stringify({ isDuplicate }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
 // 신청내역 조회
     if (action === 'history') {
     const name = e.parameter.name || '';
@@ -98,10 +109,8 @@ function doGet(e) {
 
   function doPost(e) {
     const ss = SpreadsheetApp.openById('1Zm6z-dIIzh3LEtuOzZk-yZmQkyAGbdb7dULvaghbWpU');
-    const sheet =
-  ss.getSheetByName('신청내역');
-    const item =
-  JSON.parse(e.postData.contents);
+    const sheet = ss.getSheetByName('신청내역');
+    const item = JSON.parse(e.postData.contents);
 
     sheet.appendRow([
       new Date(),
@@ -117,8 +126,6 @@ function doGet(e) {
       item.callNo || ''
     ]);
 
-    return ContentService.createTextOutput(JSON
-  .stringify({ status: 'success' }))
-
-  .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+      .setMimeType(ContentService.MimeType.JSON);
   }

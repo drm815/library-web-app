@@ -324,6 +324,17 @@ const App: React.FC = () => {
       const { kdcCode, kdcName, callNo } = await fetchKdcClass(book.isbn);
       console.log('KDC 결과:', kdcCode, kdcName, callNo);
 
+      // 중복 신청 체크
+      const checkUrl = `${GAS_URL}?action=checkDuplicate&isbn=${encodeURIComponent(book.isbn)}`;
+      const checkProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(checkUrl)}`;
+      const checkRes = await fetch(checkProxyUrl);
+      const checkResult = await checkRes.json();
+
+      if (checkResult.isDuplicate) {
+        alert(`'${book.title}'은(는) 이미 신청된 도서입니다.`);
+        return;
+      }
+
       await fetch(GAS_URL, {
         method: 'POST',
         body: JSON.stringify({
@@ -338,7 +349,7 @@ const App: React.FC = () => {
         mode: 'no-cors'
       });
 
-      alert(`'${book.title}' 희망도서 신청이 완료되었습니다!\n(Apps Script로 전송됨)`);
+      alert(`'${book.title}' 희망도서 신청이 완료되었습니다!`);
     } catch (error) {
       console.error("신청 실패:", error);
       alert("신청 중에 오류가 발생했습니다.");
