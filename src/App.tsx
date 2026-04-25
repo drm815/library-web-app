@@ -541,9 +541,17 @@ const App: React.FC = () => {
               </AnimatePresence>
 
               {results.length === 0 && !isSearching && searchQuery && (
-                <div className="text-center py-20 opacity-30">
-                  <Search size={48} className="mx-auto mb-4" />
-                  <p className="text-sm font-medium">검색 결과가 없습니다.</p>
+                <div className="text-center py-16 opacity-60">
+                  <Search size={48} className="mx-auto mb-4 text-slate-300" />
+                  <p className="text-sm font-medium text-slate-500 mb-4">검색 결과가 없습니다.</p>
+                  <a
+                    href={`https://www.aladin.co.kr/search/wsearchresult.aspx?KeyWord=${encodeURIComponent(searchQuery)}&SearchTarget=Book`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-sky-500 transition-all shadow-lg shadow-sky-100"
+                  >
+                    알라딘에서 검색하기
+                  </a>
                 </div>
               )}
             </div>
