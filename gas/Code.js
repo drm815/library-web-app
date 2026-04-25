@@ -49,6 +49,21 @@ function doGet(e) {
       `);
       return html;
     }
+// 전체 신청목록 조회 (관리자용)
+    if (action === 'allRequests') {
+      const ss = SpreadsheetApp.openById('1Zm6z-dIIzh3LEtuOzZk-yZmQkyAGbdb7dULvaghbWpU');
+      const sheet = ss.getSheetByName('신청내역');
+      const data = sheet.getDataRange().getValues();
+      const headers = data[0];
+      const rows = data.slice(1).map(row => {
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = row[i]; });
+        return obj;
+      });
+      return ContentService.createTextOutput(JSON.stringify(rows))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
 // 중복 신청 체크
     if (action === 'checkDuplicate') {
       const isbn = e.parameter.isbn || '';

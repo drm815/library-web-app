@@ -1,11 +1,13 @@
 import React, { useState, useTransition } from 'react';
-import { Search, User, History, Home, Plus, Loader2, Bookmark, CheckCircle2 } from 'lucide-react';
+import { Search, User, History, Home, Plus, Loader2, Bookmark, CheckCircle2, Settings, Download, Key, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import * as XLSX from 'xlsx';
 
 // --- 설정 ---
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwMe4EXDkYcxlO8C8Jw9DEULNqd4mKFv06xw_RcqM2neSr8vYeVRlSJzsztZRtmTVbPRQ/exec";
-const ALADIN_API_KEY = "ttbwehada20211856001";
-const NL_API_KEY = "61e6d3f886f58011909c80e1ff3a9add1adc5d95753c4c2b580f2cb8dbaecb4a"; // 국립중앙도서관 API 키 입력
+const DEFAULT_ALADIN_API_KEY = "ttbwehada20211856001";
+const DEFAULT_NL_API_KEY = "61e6d3f886f58011909c80e1ff3a9add1adc5d95753c4c2b580f2cb8dbaecb4a";
+const ADMIN_PASSWORD = "admin1234"; // 관리자 비밀번호
 
 // 모듈 레벨 상수 — 렌더마다 재생성 방지
 const ROLES = ['학생', '교직원'] as const;
@@ -195,7 +197,7 @@ const HistoryItem: React.FC<HistoryItemProps> = React.memo(({ item, idx }) => (
 // --- 메인 앱 ---
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'home' | 'history'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'history' | 'admin'>('home');
   const [user, setUser] = useState<{ name: string, email: string, role: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<BookInfo[]>([]);
@@ -206,6 +208,15 @@ const App: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loginForm, setLoginForm] = useState({ name: '', role: '학생', grade: '', classNum: '' });
   const [, startTransition] = useTransition();
+
+  // 관리자
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [aladinKey, setAladinKey] = useState(() => localStorage.getItem('aladinKey') || DEFAULT_ALADIN_API_KEY);
+  const [nlKey, setNlKey] = useState(() => localStorage.getItem('nlKey') || DEFAULT_NL_API_KEY);
+  const [aladinKeyInput, setAladinKeyInput] = useState('');
+  const [nlKeyInput, setNlKeyInput] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleLogin = () => setShowLoginModal(true);
 
@@ -220,6 +231,52 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => { setUser(null); setHistory([]); };
+
+  const handleAdminUnlock = () => {
+    if (adminPassword === ADMIN_PASSWORD) {
+      setIsAdminUnlocked(true);
+      setAladinKeyInput(aladinKey);
+      setNlKeyInput(nlKey);
+    } else {
+      alert('비밀번호가 올바르지 않습니다.');
+    }
+    setAdminPassword('');
+  };
+
+  const handleSaveKeys = () => {
+    if (aladinKeyInput.trim()) {
+      localStorage.setItem('aladinKey', aladinKeyInput.trim());
+      setAladinKey(aladinKeyInput.trim());
+    }
+    if (nlKeyInput.trim()) {
+      localStorage.setItem('nlKey', nlKeyInput.trim());
+      setNlKey(nlKeyInput.trim());
+    }
+    alert('저장됐습니다.');
+  };
+
+  const handleDownloadExcel = async () => {
+    setIsDownloading(true);
+    try {
+      const url = `${GAS_URL}?action=allRequests`;
+      const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`;
+      const res = await fetch(proxyUrl);
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        alert('신청 데이터가 없습니다.');
+        return;
+      }
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '신청내역');
+      XLSX.writeFile(wb, `희망도서신청목록_${new Date().toLocaleDateString('ko-KR').replace(/\. /g, '-').replace('.', '')}.xlsx`);
+    } catch (e) {
+      console.error('다운로드 실패:', e);
+      alert('다운로드 중 오류가 발생했습니다.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const fetchHistory = async (name: string) => {
     setIsLoadingHistory(true);
@@ -242,7 +299,7 @@ const App: React.FC = () => {
 
     try {
       const gasProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`${GAS_URL}?query=${encodeURIComponent(searchQuery)}`)}`;
-      const baseUrl = `https://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${ALADIN_API_KEY}&Query=${encodeURIComponent(searchQuery)}&QueryType=Keyword&MaxResults=10&start=1&SearchTarget=Book&output=js&Version=20131101`;
+      const baseUrl = `https://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${aladinKey}&Query=${encodeURIComponent(searchQuery)}&QueryType=Keyword&MaxResults=10&start=1&SearchTarget=Book&output=js&Version=20131101`;
       const aladinProxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(baseUrl)}`;
 
       // 1 & 2. GAS + 알라딘 병렬 fetch
@@ -293,9 +350,9 @@ const App: React.FC = () => {
   };
 
   const fetchKdcClass = async (isbn: string): Promise<{ kdcCode: string; kdcName: string; callNo: string }> => {
-    if (!NL_API_KEY) return { kdcCode: '', kdcName: '', callNo: '' };
+    if (!nlKey) return { kdcCode: '', kdcName: '', callNo: '' };
     try {
-      const apiUrl = `https://www.nl.go.kr/NL/search/openApi/search.do?key=${NL_API_KEY}&apiType=json&kwd=${isbn}&isbnYn=Y&pageSize=1`;
+      const apiUrl = `https://www.nl.go.kr/NL/search/openApi/search.do?key=${nlKey}&apiType=json&kwd=${isbn}&isbnYn=Y&pageSize=1`;
       const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(apiUrl)}`;
       const res = await fetch(proxyUrl);
       const data = await res.json();
@@ -482,6 +539,87 @@ const App: React.FC = () => {
             )}
           </>
         )}
+
+        {/* 관리자 탭 */}
+        {activeTab === 'admin' && (
+          <>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+              <h2 className="text-2xl font-bold mb-1 text-slate-800">관리자</h2>
+              <p className="text-sm text-slate-500">API 키 설정 및 신청목록 다운로드</p>
+            </motion.div>
+
+            {!isAdminUnlocked ? (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-3xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Lock size={16} className="text-slate-400" />
+                  <span className="text-sm font-bold text-slate-700">관리자 비밀번호</span>
+                </div>
+                <input
+                  type="password"
+                  placeholder="비밀번호 입력"
+                  className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:bg-white transition-all mb-3"
+                  value={adminPassword}
+                  onChange={e => setAdminPassword(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleAdminUnlock()}
+                />
+                <button
+                  onClick={handleAdminUnlock}
+                  className="w-full bg-primary text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-sky-200 hover:bg-sky-500 transition-all"
+                >
+                  확인
+                </button>
+              </motion.div>
+            ) : (
+              <div className="space-y-4">
+                {/* 신청목록 다운로드 */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-3xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Download size={16} className="text-slate-400" />
+                    <span className="text-sm font-bold text-slate-700">신청목록 다운로드</span>
+                  </div>
+                  <button
+                    onClick={handleDownloadExcel}
+                    disabled={isDownloading}
+                    className="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm hover:bg-emerald-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-100"
+                  >
+                    {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                    {isDownloading ? '다운로드 중...' : 'Excel 다운로드'}
+                  </button>
+                </motion.div>
+
+                {/* API 키 설정 */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass rounded-3xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Key size={16} className="text-slate-400" />
+                    <span className="text-sm font-bold text-slate-700">API 키 설정</span>
+                  </div>
+                  <label className="text-xs text-slate-500 block mb-1.5">알라딘 API 키</label>
+                  <input
+                    type="text"
+                    placeholder={DEFAULT_ALADIN_API_KEY}
+                    className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:bg-white transition-all mb-4 font-mono"
+                    value={aladinKeyInput}
+                    onChange={e => setAladinKeyInput(e.target.value)}
+                  />
+                  <label className="text-xs text-slate-500 block mb-1.5">국립중앙도서관 API 키</label>
+                  <input
+                    type="text"
+                    placeholder={DEFAULT_NL_API_KEY}
+                    className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:bg-white transition-all mb-4 font-mono"
+                    value={nlKeyInput}
+                    onChange={e => setNlKeyInput(e.target.value)}
+                  />
+                  <button
+                    onClick={handleSaveKeys}
+                    className="w-full bg-primary text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-sky-200 hover:bg-sky-500 transition-all"
+                  >
+                    저장
+                  </button>
+                </motion.div>
+              </div>
+            )}
+          </>
+        )}
       </main>
 
       {/* 네이티브 스타일 하단 바 */}
@@ -502,6 +640,13 @@ const App: React.FC = () => {
         >
           <History size={activeTab === 'history' ? 24 : 22} />
           <span className="text-[10px] font-bold">신청현황</span>
+        </button>
+        <button
+          onClick={() => { setActiveTab('admin'); setIsAdminUnlocked(false); }}
+          className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'admin' ? 'text-primary' : 'text-slate-400'}`}
+        >
+          <Settings size={activeTab === 'admin' ? 24 : 22} />
+          <span className="text-[10px] font-bold">관리자</span>
         </button>
       </nav>
     </div>
