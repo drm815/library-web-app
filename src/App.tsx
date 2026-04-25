@@ -351,11 +351,9 @@ const App: React.FC = () => {
           combined.push(item);
         }
       });
-      setRecentSearches(prev => {
-        const updated = [q, ...prev.filter(s => s !== q)].slice(0, 5);
-        localStorage.setItem('recentSearches', JSON.stringify(updated));
-        return updated;
-      });
+      const updatedSearches = [q, ...recentSearches.filter(s => s !== q)].slice(0, 5);
+      setRecentSearches(updatedSearches);
+      localStorage.setItem('recentSearches', JSON.stringify(updatedSearches));
       setResults(combined);
     } catch (error) {
       console.error("검색 중 오류 발생:", error);
