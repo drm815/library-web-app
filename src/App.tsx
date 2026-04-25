@@ -18,6 +18,7 @@ interface BookInfo {
   title: string;
   author: string;
   publisher: string;
+  pubYear?: string;
   price: number;
   isbn: string;
   coverUrl: string;
@@ -139,7 +140,7 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, isRequesting, onRe
             <Plus size={14} className="text-primary flex-shrink-0" />
           )}
         </div>
-        <p className="text-[11px] text-slate-500 mt-1 truncate">{book.author} | {book.publisher}</p>
+        <p className="text-[11px] text-slate-500 mt-1 truncate">{book.author} | {book.publisher}{book.pubYear ? ` | ${book.pubYear}` : ''}</p>
         {book.isExisting ? (
           <span className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-md border border-emerald-100">
             <CheckCircle2 size={10} />
@@ -327,6 +328,7 @@ const App: React.FC = () => {
         title: item.title.replace(/<[^>]*>?/gm, ''),
         author: item.author.replace(/<[^>]*>?/gm, ''),
         publisher: item.publisher,
+        pubYear: item.pubDate ? item.pubDate.substring(0, 4) : '',
         price: item.priceStandard,
         isbn: item.isbn13 || item.isbn,
         coverUrl: item.cover,

@@ -134,6 +134,7 @@ function doGet(e) {
       item.title,
       item.author,
       item.publisher,
+      item.pubYear || '',
       item.price,
       item.isbn,
       item.kdcCode || '',
