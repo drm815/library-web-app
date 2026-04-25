@@ -373,7 +373,8 @@ const App: React.FC = () => {
 
   const requestBook = async (book: BookInfo) => {
     if (!user) {
-      alert("신청을 위해 로그인이 필요합니다.");
+      alert("신청을 위해 신청자 등록이 필요합니다.");
+      setShowLoginModal(true);
       return;
     }
 
