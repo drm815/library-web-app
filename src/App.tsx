@@ -326,9 +326,10 @@ const App: React.FC = () => {
 
       // 중복 신청 체크
       const checkUrl = `${GAS_URL}?action=checkDuplicate&isbn=${encodeURIComponent(book.isbn)}`;
-      const checkProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(checkUrl)}`;
+      const checkProxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(checkUrl)}`;
       const checkRes = await fetch(checkProxyUrl);
       const checkResult = await checkRes.json();
+      console.log('중복체크 결과:', checkResult);
 
       if (checkResult.isDuplicate) {
         alert(`'${book.title}'은(는) 이미 신청된 도서입니다.`);
