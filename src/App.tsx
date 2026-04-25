@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // --- 설정 ---
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwMe4EXDkYcxlO8C8Jw9DEULNqd4mKFv06xw_RcqM2neSr8vYeVRlSJzsztZRtmTVbPRQ/exec";
 const ALADIN_API_KEY = "ttbwehada20211856001";
+const NL_API_KEY = "61e6d3f886f58011909c80e1ff3a9add1adc5d95753c4c2b580f2cb8dbaecb4a"; // 국립중앙도서관 API 키 입력
 
 // 모듈 레벨 상수 — 렌더마다 재생성 방지
 const ROLES = ['학생', '교직원'] as const;
@@ -19,6 +20,8 @@ interface BookInfo {
   isbn: string;
   coverUrl: string;
   isExisting?: boolean;
+  kdcCode?: string; // KDC 분류번호
+  kdcName?: string; // KDC 분류명
 }
 
 // --- 서브 컴포넌트 ---
@@ -240,12 +243,12 @@ const App: React.FC = () => {
     try {
       const gasProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`${GAS_URL}?query=${encodeURIComponent(searchQuery)}`)}`;
       const baseUrl = `https://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${ALADIN_API_KEY}&Query=${encodeURIComponent(searchQuery)}&QueryType=Keyword&MaxResults=10&start=1&SearchTarget=Book&output=js&Version=20131101`;
-      const aladinProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(baseUrl)}`;
+      const aladinProxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(baseUrl)}`;
 
       // 1 & 2. GAS + 알라딘 병렬 fetch
-      const [gasData, aladinText] = await Promise.all([
+      const [gasData, aladinData] = await Promise.all([
         fetch(gasProxyUrl).then(r => r.json()).catch(() => null),
-        fetch(aladinProxyUrl).then(r => r.text()).catch(() => null),
+        fetch(aladinProxyUrl).then(r => r.json()).catch(() => null),
       ]);
 
       // GAS 결과 처리
@@ -263,45 +266,48 @@ const App: React.FC = () => {
       }
 
       // 알라딘 결과 처리
-      if (aladinText) {
-        const jsonStart = aladinText.indexOf('{');
-        const jsonEnd = aladinText.lastIndexOf('}');
-        if (jsonStart !== -1 && jsonEnd !== -1) {
-          const jsonStr = aladinText.substring(jsonStart, jsonEnd + 1);
-          const data = JSON.parse(jsonStr);
-          const aladinItems = (data.item || []).map((item: any) => ({
-            title: item.title.replace(/<[^>]*>?/gm, ''),
-            author: item.author.replace(/<[^>]*>?/gm, ''),
-            publisher: item.publisher,
-            price: item.priceStandard,
-            isbn: item.isbn13 || item.isbn,
-            coverUrl: item.cover,
-            isExisting: false
-          }));
+      const aladinItems = (aladinData?.item || []).map((item: any) => ({
+        title: item.title.replace(/<[^>]*>?/gm, ''),
+        author: item.author.replace(/<[^>]*>?/gm, ''),
+        publisher: item.publisher,
+        price: item.priceStandard,
+        isbn: item.isbn13 || item.isbn,
+        coverUrl: item.cover,
+        isExisting: false
+      }));
 
-          // 3. 데이터 통합: ISBN Set으로 O(1) 중복 체크
-          const existingIsbnSet = new Set(existingBooks.map(b => b.isbn));
-          const combined = [...existingBooks];
-          aladinItems.forEach((item: BookInfo) => {
-            if (existingIsbnSet.has(item.isbn)) return;
-            const normItem = normalize(item.title);
-            const isDuplicate = combined.some(b => {
-              const normB = normalize(b.title);
-              return normItem.includes(normB) || normB.includes(normItem);
-            });
-            if (!isDuplicate) {
-              combined.push(item);
-            }
-          });
-          setResults(combined);
+      // 3. 데이터 통합: 제목이 완전히 동일한 경우만 중복 처리
+      const existingTitleSet = new Set(existingBooks.map(b => normalize(b.title)));
+      const combined = [...existingBooks];
+      aladinItems.forEach((item: BookInfo) => {
+        if (!existingTitleSet.has(normalize(item.title))) {
+          combined.push(item);
         }
-      } else {
-        setResults(existingBooks);
-      }
+      });
+      setResults(combined);
     } catch (error) {
       console.error("검색 중 오류 발생:", error);
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  const fetchKdcClass = async (isbn: string): Promise<{ kdcCode: string; kdcName: string }> => {
+    if (!NL_API_KEY) return { kdcCode: '', kdcName: '' };
+    try {
+      const apiUrl = `https://www.nl.go.kr/NL/search/openApi/search.do?key=${NL_API_KEY}&apiType=json&kwd=${isbn}&isbnYn=Y&pageSize=1`;
+      const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(apiUrl)}`;
+      const res = await fetch(proxyUrl);
+      const data = await res.json();
+      const item = data?.result?.[0];
+      if (!item) return { kdcCode: '', kdcName: '' };
+      return {
+        kdcCode: item.classNo || '',
+        kdcName: item.kdcName1s || '',
+      };
+    } catch (e) {
+      console.error('KDC 분류 조회 실패:', e);
+      return { kdcCode: '', kdcName: '' };
     }
   };
 
@@ -313,10 +319,16 @@ const App: React.FC = () => {
 
     setIsRequesting(book.isbn);
     try {
+      console.log('신청 isbn:', book.isbn);
+      const { kdcCode, kdcName } = await fetchKdcClass(book.isbn);
+      console.log('KDC 결과:', kdcCode, kdcName);
+
       await fetch(GAS_URL, {
         method: 'POST',
         body: JSON.stringify({
           ...book,
+          kdcCode,
+          kdcName,
           requester: user.name,
           requesterName: user.name,
           requesterRole: user.role
