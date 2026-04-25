@@ -218,6 +218,9 @@ const App: React.FC = () => {
   const [aladinKeyInput, setAladinKeyInput] = useState('');
   const [nlKeyInput, setNlKeyInput] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>(
+    () => JSON.parse(localStorage.getItem('recentSearches') || '[]')
+  );
 
   const handleLogin = () => setShowLoginModal(true);
 
@@ -345,6 +348,11 @@ const App: React.FC = () => {
         if (!existingTitleSet.has(normalize(item.title))) {
           combined.push(item);
         }
+      });
+      setRecentSearches(prev => {
+        const updated = [searchQuery, ...prev.filter(s => s !== searchQuery)].slice(0, 5);
+        localStorage.setItem('recentSearches', JSON.stringify(updated));
+        return updated;
       });
       setResults(combined);
     } catch (error) {
@@ -491,6 +499,32 @@ const App: React.FC = () => {
                 </button>
               </div>
             </div>
+
+            {/* 최근 검색어 */}
+            {recentSearches.length > 0 && results.length === 0 && !isSearching && (
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-bold text-slate-400">최근 검색어</span>
+                  <button
+                    onClick={() => { setRecentSearches([]); localStorage.removeItem('recentSearches'); }}
+                    className="text-[10px] text-slate-400 hover:text-slate-600"
+                  >
+                    전체 삭제
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {recentSearches.map(s => (
+                    <button
+                      key={s}
+                      onClick={() => { setSearchQuery(s); setTimeout(searchBooks, 0); }}
+                      className="px-3 py-1.5 bg-slate-100 text-slate-600 text-xs font-medium rounded-full hover:bg-sky-50 hover:text-primary transition-all"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* 검색 결과 */}
             <div className="space-y-4">
