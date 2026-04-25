@@ -113,7 +113,8 @@ function doGet(e) {
       item.price,
       item.isbn,
       item.kdcCode || '',
-      item.kdcName || ''
+      item.kdcName || '',
+      item.callNo || ''
     ]);
 
     return ContentService.createTextOutput(JSON

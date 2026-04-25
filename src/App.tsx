@@ -292,22 +292,23 @@ const App: React.FC = () => {
     }
   };
 
-  const fetchKdcClass = async (isbn: string): Promise<{ kdcCode: string; kdcName: string }> => {
-    if (!NL_API_KEY) return { kdcCode: '', kdcName: '' };
+  const fetchKdcClass = async (isbn: string): Promise<{ kdcCode: string; kdcName: string; callNo: string }> => {
+    if (!NL_API_KEY) return { kdcCode: '', kdcName: '', callNo: '' };
     try {
       const apiUrl = `https://www.nl.go.kr/NL/search/openApi/search.do?key=${NL_API_KEY}&apiType=json&kwd=${isbn}&isbnYn=Y&pageSize=1`;
       const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(apiUrl)}`;
       const res = await fetch(proxyUrl);
       const data = await res.json();
       const item = data?.result?.[0];
-      if (!item) return { kdcCode: '', kdcName: '' };
+      if (!item) return { kdcCode: '', kdcName: '', callNo: '' };
       return {
         kdcCode: item.classNo || '',
         kdcName: item.kdcName1s || '',
+        callNo: item.callNo || '',
       };
     } catch (e) {
       console.error('KDC 분류 조회 실패:', e);
-      return { kdcCode: '', kdcName: '' };
+      return { kdcCode: '', kdcName: '', callNo: '' };
     }
   };
 
@@ -320,8 +321,8 @@ const App: React.FC = () => {
     setIsRequesting(book.isbn);
     try {
       console.log('신청 isbn:', book.isbn);
-      const { kdcCode, kdcName } = await fetchKdcClass(book.isbn);
-      console.log('KDC 결과:', kdcCode, kdcName);
+      const { kdcCode, kdcName, callNo } = await fetchKdcClass(book.isbn);
+      console.log('KDC 결과:', kdcCode, kdcName, callNo);
 
       await fetch(GAS_URL, {
         method: 'POST',
@@ -329,6 +330,7 @@ const App: React.FC = () => {
           ...book,
           kdcCode,
           kdcName,
+          callNo,
           requester: user.name,
           requesterName: user.name,
           requesterRole: user.role
