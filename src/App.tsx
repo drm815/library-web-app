@@ -300,7 +300,7 @@ const App: React.FC = () => {
 
     try {
       const gasProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`${GAS_URL}?query=${encodeURIComponent(searchQuery)}`)}`;
-      const baseUrl = `https://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${aladinKey}&Query=${encodeURIComponent(searchQuery)}&QueryType=Keyword&MaxResults=10&start=1&SearchTarget=Book&output=js&Version=20131101`;
+      const baseUrl = `https://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${aladinKey}&Query=${encodeURIComponent(searchQuery)}&QueryType=Title&MaxResults=10&start=1&SearchTarget=Book&output=js&Version=20131101`;
       const aladinProxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(baseUrl)}`;
 
       // 1 & 2. GAS + 알라딘 병렬 fetch
