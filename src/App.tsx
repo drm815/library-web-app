@@ -155,7 +155,7 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, isRequesting, onRe
 
       {!book.isExisting && (
         <button
-          onClick={() => onRequest(book)}
+          onClick={() => setTimeout(() => onRequest(book), 0)}
           className="mt-3 w-full py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-sky-500 transition-all flex items-center justify-center gap-2 shadow-sm"
           disabled={isRequesting === book.isbn}
         >
