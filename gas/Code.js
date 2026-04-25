@@ -105,9 +105,9 @@ function doGet(e) {
     const data = sheet.getDataRange().getValues();
     data.shift();
 
-    const query = e.parameter.query || '';
-    const results = data                                                                   
-    .filter(row => String(row[3]).includes(query) || String(row[4]).includes(query))     
+    const query = (e.parameter.query || '').replace(/\s/g, '');
+    const results = data
+    .filter(row => String(row[3]).replace(/\s/g, '').includes(query) || String(row[4]).replace(/\s/g, '').includes(query))     
     .map(row => ({                                                                       
       title: row[3],        // D열 = 자료명                                              
       author: row[4],       // E열 = 저자

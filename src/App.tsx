@@ -294,7 +294,10 @@ const App: React.FC = () => {
   };
 
   const searchBooks = async () => {
-    if (!searchQuery.trim()) return;
+    if (searchQuery.replace(/\s/g, '').length < 2) {
+      alert('2글자 이상 입력해주세요.');
+      return;
+    }
     setIsSearching(true);
     setResults([]);
 
@@ -473,7 +476,7 @@ const App: React.FC = () => {
                 </div>
                 <input
                   type="text"
-                  placeholder="제목이나 저자를 입력하세요"
+                  placeholder="2글자 이상 입력하세요"
                   className="bg-transparent flex-grow h-12 outline-none text-sm placeholder:text-slate-600"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
