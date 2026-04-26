@@ -164,7 +164,7 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, isRequesting, onRe
             <span className="mt-2 inline-block px-2 py-0.5 bg-sky-50 text-primary text-[10px] font-bold rounded-md border border-sky-100">
               미보유 (신청 가능)
             </span>
-            {!book.isExisting && (book.requestCount ?? 0) > 0 && (
+            {(book.requestCount ?? 0) > 0 && (
               <span className="mt-1 inline-block px-2 py-0.5 bg-orange-50 text-orange-500 text-[10px] font-bold rounded-md border border-orange-100">
                 {book.requestCount}명 신청 중
               </span>
@@ -422,9 +422,11 @@ const App: React.FC = () => {
           combined.push(item);
         }
       });
-      combined.forEach(b => {
-        b.requestCount = (countsData as Record<string, number>)[b.isbn] || 0;
-      });
+      const counts: Record<string, number> =
+        countsData && typeof countsData === 'object' && !Array.isArray(countsData)
+          ? (countsData as Record<string, number>)
+          : {};
+      combined.forEach(b => { b.requestCount = counts[b.isbn] || 0; });
       const updatedSearches = [q, ...recentSearches.filter(s => s !== q)].slice(0, 5);
       setRecentSearches(updatedSearches);
       localStorage.setItem('recentSearches', JSON.stringify(updatedSearches));

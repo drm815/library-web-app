@@ -71,7 +71,8 @@ function doGet(e) {
       const data = sheet.getDataRange().getValues().slice(1);
       const counts = {};
       data.forEach(row => {
-        const isbn = String(row[8]);
+        const isbn = row[8] != null ? String(row[8]).trim() : '';
+        if (!isbn) return;
         counts[isbn] = (counts[isbn] || 0) + 1;
       });
       return ContentService.createTextOutput(JSON.stringify(counts))
