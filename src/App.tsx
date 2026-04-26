@@ -338,8 +338,9 @@ const App: React.FC = () => {
       const res = await fetch(proxyUrl);
       const data = await res.json();
       if (Array.isArray(data)) setAllRequests(data);
+      else alert('응답 형식 오류: ' + JSON.stringify(data).slice(0, 200));
     } catch (e) {
-      alert('목록 로드 중 오류가 발생했습니다.');
+      alert('목록 로드 중 오류가 발생했습니다: ' + String(e));
     } finally {
       setIsLoadingRequests(false);
     }
