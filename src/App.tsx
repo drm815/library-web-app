@@ -797,8 +797,27 @@ const App: React.FC = () => {
                   )}
                 </motion.div>
 
-                {/* API 키 설정 */}
+                {/* 신청 마감일 설정 */}
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass rounded-3xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-sm font-bold text-slate-700">신청 마감일 설정</span>
+                  </div>
+                  <input
+                    type="date"
+                    className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:bg-white transition-all mb-3"
+                    value={deadlineInput}
+                    onChange={e => setDeadlineInput(e.target.value)}
+                  />
+                  <button
+                    onClick={handleSaveDeadline}
+                    className="w-full bg-slate-700 text-white font-bold py-3 rounded-xl text-sm hover:bg-slate-800 transition-all"
+                  >
+                    마감일 저장
+                  </button>
+                </motion.div>
+
+                {/* API 키 설정 */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass rounded-3xl p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <Key size={16} className="text-slate-400" />
                     <span className="text-sm font-bold text-slate-700">API 키 설정</span>
@@ -819,19 +838,6 @@ const App: React.FC = () => {
                     value={nlKeyInput}
                     onChange={e => setNlKeyInput(e.target.value)}
                   />
-                  <label className="text-xs text-slate-500 block mb-1.5 mt-4">신청 마감일</label>
-                  <input
-                    type="date"
-                    className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:bg-white transition-all mb-3"
-                    value={deadlineInput}
-                    onChange={e => setDeadlineInput(e.target.value)}
-                  />
-                  <button
-                    onClick={handleSaveDeadline}
-                    className="w-full bg-slate-700 text-white font-bold py-3 rounded-xl text-sm hover:bg-slate-800 transition-all mb-4"
-                  >
-                    마감일 저장
-                  </button>
                   <button
                     onClick={handleSaveKeys}
                     className="w-full bg-primary text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-sky-200 hover:bg-sky-500 transition-all"
