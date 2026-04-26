@@ -787,10 +787,10 @@ const App: React.FC = () => {
                         .map((r, i) => (
                           <div key={i} className="bg-slate-50 rounded-xl px-3 py-2.5 border border-slate-100">
                             <div className="flex justify-between items-start">
-                              <p className="text-xs font-bold text-slate-800 truncate flex-grow pr-2">{r['제목'] || r.title}</p>
-                              <span className="text-[10px] text-slate-400 flex-shrink-0">{r['구분'] || r.role}</span>
+                              <p className="text-xs font-bold text-slate-800 truncate flex-grow pr-2">{r.title}</p>
+                              <span className="text-[10px] text-slate-400 flex-shrink-0">{r.role}</span>
                             </div>
-                            <p className="text-[10px] text-slate-500 mt-0.5">{r['이름'] || r.name} · {String(r['날짜'] || r.date).substring(0, 10)}</p>
+                            <p className="text-[10px] text-slate-500 mt-0.5">{r.name} · {String(r.date).substring(0, 10)}</p>
                           </div>
                         ))}
                     </div>

@@ -55,11 +55,20 @@ function doGet(e) {
       const sheet = ss.getSheetByName('신청내역');
       const data = sheet.getDataRange().getValues();
       const headers = data[0];
-      const rows = data.slice(1).map(row => {
-        const obj = {};
-        headers.forEach((h, i) => { obj[h] = row[i]; });
-        return obj;
-      });
+      const rows = data.slice(1).map(row => ({
+        date: row[0],
+        role: row[1],
+        name: row[2],
+        title: row[3],
+        author: row[4],
+        publisher: row[5],
+        pubYear: row[6],
+        price: row[7],
+        isbn: String(row[8]),
+        kdcCode: row[9],
+        kdcName: row[10],
+        callNo: row[11]
+      }));
       return ContentService.createTextOutput(JSON.stringify(rows))
         .setMimeType(ContentService.MimeType.JSON);
     }
