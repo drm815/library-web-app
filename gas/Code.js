@@ -64,6 +64,20 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+// 신청자 수 조회
+    if (action === 'requestCounts') {
+      const ss = SpreadsheetApp.openById('1Zm6z-dIIzh3LEtuOzZk-yZmQkyAGbdb7dULvaghbWpU');
+      const sheet = ss.getSheetByName('신청내역');
+      const data = sheet.getDataRange().getValues().slice(1);
+      const counts = {};
+      data.forEach(row => {
+        const isbn = String(row[8]);
+        counts[isbn] = (counts[isbn] || 0) + 1;
+      });
+      return ContentService.createTextOutput(JSON.stringify(counts))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
 // 신청 취소
     if (action === 'cancelRequest') {
       const isbn = e.parameter.isbn || '';

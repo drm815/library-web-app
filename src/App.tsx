@@ -26,6 +26,7 @@ interface BookInfo {
   isExisting?: boolean;
   kdcCode?: string; // KDC 분류번호
   kdcName?: string; // KDC 분류명
+  requestCount?: number;
 }
 
 // --- 서브 컴포넌트 ---
@@ -159,9 +160,16 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, isRequesting, onRe
             도서관 보유 중
           </span>
         ) : (
-          <span className="mt-2 inline-block px-2 py-0.5 bg-sky-50 text-primary text-[10px] font-bold rounded-md border border-sky-100">
-            미보유 (신청 가능)
-          </span>
+          <>
+            <span className="mt-2 inline-block px-2 py-0.5 bg-sky-50 text-primary text-[10px] font-bold rounded-md border border-sky-100">
+              미보유 (신청 가능)
+            </span>
+            {!book.isExisting && (book.requestCount ?? 0) > 0 && (
+              <span className="mt-1 inline-block px-2 py-0.5 bg-orange-50 text-orange-500 text-[10px] font-bold rounded-md border border-orange-100">
+                {book.requestCount}명 신청 중
+              </span>
+            )}
+          </>
         )}
       </div>
 
@@ -370,9 +378,13 @@ const App: React.FC = () => {
       const aladinProxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(baseUrl)}`;
 
       // 1 & 2. GAS + 알라딘 병렬 fetch
-      const [gasData, aladinData] = await Promise.all([
+      const countsUrl = `${GAS_URL}?action=requestCounts`;
+      const countsProxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(countsUrl)}`;
+
+      const [gasData, aladinData, countsData] = await Promise.all([
         fetch(gasProxyUrl).then(r => r.json()).catch(() => null),
         fetch(aladinProxyUrl).then(r => r.json()).catch(() => null),
+        fetch(countsProxyUrl).then(r => r.json()).catch(() => ({})),
       ]);
 
       // GAS 결과 처리
@@ -409,6 +421,9 @@ const App: React.FC = () => {
         if (!existingTitleSet.has(normalize(item.title))) {
           combined.push(item);
         }
+      });
+      combined.forEach(b => {
+        b.requestCount = (countsData as Record<string, number>)[b.isbn] || 0;
       });
       const updatedSearches = [q, ...recentSearches.filter(s => s !== q)].slice(0, 5);
       setRecentSearches(updatedSearches);
