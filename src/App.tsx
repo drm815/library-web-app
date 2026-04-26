@@ -176,7 +176,7 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, isRequesting, onRe
 
       {!book.isExisting && (
         <button
-          onClick={() => !isDeadlinePassed && setTimeout(() => onRequest(book), 0)}
+          onClick={() => setTimeout(() => onRequest(book), 0)}
           disabled={isRequesting === book.isbn || isDeadlinePassed}
           className={`mt-3 w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm ${
             isDeadlinePassed
@@ -519,7 +519,7 @@ const App: React.FC = () => {
     }
   };
 
-  const isDeadlinePassed = deadline ? new Date() > new Date(deadline + 'T23:59:59') : false;
+  const isDeadlinePassed = deadline ? (() => { const end = new Date(deadline); end.setHours(23, 59, 59, 999); return new Date() > end; })() : false;
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-24 font-['Pretendard']">
