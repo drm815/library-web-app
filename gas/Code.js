@@ -64,6 +64,24 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+// 신청 취소
+    if (action === 'cancelRequest') {
+      const isbn = e.parameter.isbn || '';
+      const name = e.parameter.name || '';
+      const ss = SpreadsheetApp.openById('1Zm6z-dIIzh3LEtuOzZk-yZmQkyAGbdb7dULvaghbWpU');
+      const sheet = ss.getSheetByName('신청내역');
+      const data = sheet.getDataRange().getValues();
+      for (let i = data.length - 1; i >= 1; i--) {
+        if (String(data[i][8]) === String(isbn) && String(data[i][2]) === String(name)) {
+          sheet.deleteRow(i + 1);
+          return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ status: 'notFound' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
 // 중복 신청 체크
     if (action === 'checkDuplicate') {
       const isbn = e.parameter.isbn || '';
@@ -92,8 +110,8 @@ function doGet(e) {
           title: row[3],
           author: row[4],
           publisher: row[5],
-          price: row[6],
-          isbn: row[7]
+          price: row[7],
+          isbn: String(row[8])
         }));
 
       return ContentService.createTextOutput(JSON.stringify(results))

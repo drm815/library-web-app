@@ -174,11 +174,12 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, isRequesting, onRe
 ));
 
 interface HistoryItemProps {
-  item: { date: string; role: string; title: string; author: string; publisher: string };
+  item: { date: string; role: string; title: string; author: string; publisher: string; isbn: string };
   idx: number;
+  onCancel: (isbn: string, title: string) => void;
 }
 
-const HistoryItem: React.FC<HistoryItemProps> = React.memo(({ item, idx }) => (
+const HistoryItem: React.FC<HistoryItemProps> = React.memo(({ item, idx, onCancel }) => (
   <motion.div
     key={idx}
     initial={{ opacity: 0, y: 20 }}
@@ -191,7 +192,15 @@ const HistoryItem: React.FC<HistoryItemProps> = React.memo(({ item, idx }) => (
       <span className="text-[10px] bg-sky-50 text-primary font-bold px-2 py-0.5 rounded-md flex-shrink-0 border border-sky-100">{item.role}</span>
     </div>
     <p className="text-[11px] text-slate-500">{item.author} | {item.publisher}</p>
-    <p className="text-[10px] text-slate-600 mt-1">{new Date(item.date).toLocaleDateString('ko-KR')}</p>
+    <div className="flex justify-between items-center mt-2">
+      <p className="text-[10px] text-slate-600">{new Date(item.date).toLocaleDateString('ko-KR')}</p>
+      <button
+        onClick={() => onCancel(item.isbn, item.title)}
+        className="text-[10px] text-red-400 hover:text-red-600 font-bold transition-colors"
+      >
+        신청 취소
+      </button>
+    </div>
   </motion.div>
 ));
 
@@ -204,7 +213,7 @@ const App: React.FC = () => {
   const [results, setResults] = useState<BookInfo[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isRequesting, setIsRequesting] = useState<string | null>(null);
-  const [history, setHistory] = useState<{ date: string, role: string, title: string, author: string, publisher: string }[]>([]);
+  const [history, setHistory] = useState<{ date: string, role: string, title: string, author: string, publisher: string, isbn: string }[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loginForm, setLoginForm] = useState({ name: '', role: '학생', grade: '', classNum: '' });
@@ -279,6 +288,25 @@ const App: React.FC = () => {
       alert('다운로드 중 오류가 발생했습니다.');
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const cancelRequest = async (isbn: string, title: string) => {
+    if (!user) return;
+    if (!window.confirm(`'${title}' 신청을 취소할까요?`)) return;
+    try {
+      const url = `${GAS_URL}?action=cancelRequest&isbn=${encodeURIComponent(isbn)}&name=${encodeURIComponent(user.name)}`;
+      const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`;
+      const res = await fetch(proxyUrl);
+      const result = await res.json();
+      if (result.status === 'success') {
+        setHistory(prev => prev.filter(h => h.isbn !== isbn));
+        alert(`'${title}' 신청이 취소됐습니다.`);
+      } else {
+        alert('취소할 수 없는 신청입니다.');
+      }
+    } catch (e) {
+      alert('취소 중 오류가 발생했습니다.');
     }
   };
 
@@ -581,7 +609,7 @@ const App: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 {history.map((item, idx) => (
-                  <HistoryItem key={idx} item={item} idx={idx} />
+                  <HistoryItem key={idx} item={item} idx={idx} onCancel={cancelRequest} />
                 ))}
               </div>
             )}
