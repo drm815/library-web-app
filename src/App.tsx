@@ -119,9 +119,10 @@ interface BookCardProps {
   isRequesting: string | null;
   onRequest: (book: BookInfo) => void;
   idx: number;
+  isDeadlinePassed: boolean;
 }
 
-const BookCard: React.FC<BookCardProps> = React.memo(({ book, isRequesting, onRequest, idx }) => (
+const BookCard: React.FC<BookCardProps> = React.memo(({ book, isRequesting, onRequest, idx, isDeadlinePassed }) => (
   <motion.div
     key={book.isbn + idx}
     initial={{ opacity: 0, y: 20 }}
@@ -175,17 +176,20 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, isRequesting, onRe
 
       {!book.isExisting && (
         <button
-          onClick={() => setTimeout(() => onRequest(book), 0)}
-          className="mt-3 w-full py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-sky-500 transition-all flex items-center justify-center gap-2 shadow-sm"
-          disabled={isRequesting === book.isbn}
+          onClick={() => !isDeadlinePassed && setTimeout(() => onRequest(book), 0)}
+          disabled={isRequesting === book.isbn || isDeadlinePassed}
+          className={`mt-3 w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm ${
+            isDeadlinePassed
+              ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              : 'bg-primary text-white hover:bg-sky-500'
+          }`}
         >
           {isRequesting === book.isbn ? (
             <Loader2 size={14} className="animate-spin" />
+          ) : isDeadlinePassed ? (
+            '신청 마감'
           ) : (
-            <>
-              <Plus size={14} />
-              희망도서 신청하기
-            </>
+            <><Plus size={14} />희망도서 신청하기</>
           )}
         </button>
       )}
@@ -253,6 +257,12 @@ const App: React.FC = () => {
   const [recentSearches, setRecentSearches] = useState<string[]>(
     () => JSON.parse(localStorage.getItem('recentSearches') || '[]')
   );
+  const [deadline, setDeadline] = useState<string>(
+    () => localStorage.getItem('deadline') || ''
+  );
+  const [deadlineInput, setDeadlineInput] = useState<string>(
+    () => localStorage.getItem('deadline') || ''
+  );
 
   const handleLogin = () => setShowLoginModal(true);
 
@@ -277,6 +287,12 @@ const App: React.FC = () => {
       alert('비밀번호가 올바르지 않습니다.');
     }
     setAdminPassword('');
+  };
+
+  const handleSaveDeadline = () => {
+    localStorage.setItem('deadline', deadlineInput);
+    setDeadline(deadlineInput);
+    alert(deadlineInput ? `마감일이 ${deadlineInput}으로 설정됐습니다.` : '마감일이 해제됐습니다.');
   };
 
   const handleSaveKeys = () => {
@@ -503,6 +519,8 @@ const App: React.FC = () => {
     }
   };
 
+  const isDeadlinePassed = deadline ? new Date() > new Date(deadline + 'T23:59:59') : false;
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-24 font-['Pretendard']">
 
@@ -551,6 +569,17 @@ const App: React.FC = () => {
               <h2 className="text-2xl font-bold mb-2 text-slate-800">어떤 책을 원하시나요?</h2>
               <p className="text-sm text-slate-500">보유 도서를 검색하고, 없는 책을 신청하세요.</p>
             </motion.div>
+
+            {isDeadlinePassed && (
+              <div className="mb-6 px-4 py-3 bg-red-50 border border-red-100 rounded-2xl text-center">
+                <p className="text-xs font-bold text-red-500">신청 기간이 종료됐습니다.</p>
+              </div>
+            )}
+            {deadline && !isDeadlinePassed && (
+              <div className="mb-6 px-4 py-3 bg-sky-50 border border-sky-100 rounded-2xl text-center">
+                <p className="text-xs font-bold text-primary">신청 마감일: {deadline}</p>
+              </div>
+            )}
 
             {/* 검색창 */}
             <div className="relative mb-8 group">
@@ -612,6 +641,7 @@ const App: React.FC = () => {
                     isRequesting={isRequesting}
                     onRequest={requestBook}
                     idx={idx}
+                    isDeadlinePassed={isDeadlinePassed}
                   />
                 ))}
               </AnimatePresence>
@@ -786,6 +816,19 @@ const App: React.FC = () => {
                     value={nlKeyInput}
                     onChange={e => setNlKeyInput(e.target.value)}
                   />
+                  <label className="text-xs text-slate-500 block mb-1.5 mt-4">신청 마감일</label>
+                  <input
+                    type="date"
+                    className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:bg-white transition-all mb-3"
+                    value={deadlineInput}
+                    onChange={e => setDeadlineInput(e.target.value)}
+                  />
+                  <button
+                    onClick={handleSaveDeadline}
+                    className="w-full bg-slate-700 text-white font-bold py-3 rounded-xl text-sm hover:bg-slate-800 transition-all mb-4"
+                  >
+                    마감일 저장
+                  </button>
                   <button
                     onClick={handleSaveKeys}
                     className="w-full bg-primary text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-sky-200 hover:bg-sky-500 transition-all"
