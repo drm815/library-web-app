@@ -560,7 +560,7 @@ const App: React.FC = () => {
 
       {/* 메인 영역 */}
       <main className="max-w-md mx-auto w-full px-5 py-8 flex-grow">
-        {activeTab === 'home' ? (
+        {activeTab === 'home' && (
           <>
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -663,7 +663,9 @@ const App: React.FC = () => {
               )}
             </div>
           </>
-        ) : (
+        )}
+
+        {activeTab === 'history' && (
           <>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
               <h2 className="text-2xl font-bold mb-1 text-slate-800">신청현황</h2>
