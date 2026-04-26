@@ -103,7 +103,7 @@ function doGet(e) {
       const ss = SpreadsheetApp.openById('1Zm6z-dIIzh3LEtuOzZk-yZmQkyAGbdb7dULvaghbWpU');
       const sheet = ss.getSheetByName('신청내역');
       const data = sheet.getDataRange().getValues();
-      const isDuplicate = data.slice(1).some(row => String(row[7]) === String(isbn));
+      const isDuplicate = data.slice(1).some(row => String(row[8]) === String(isbn));
       return ContentService.createTextOutput(JSON.stringify({ isDuplicate }))
         .setMimeType(ContentService.MimeType.JSON);
     }
