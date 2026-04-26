@@ -805,7 +805,7 @@ const App: React.FC = () => {
                   </div>
                   <label className="text-xs text-slate-500 block mb-1.5">알라딘 API 키</label>
                   <input
-                    type="text"
+                    type="password"
                     placeholder={DEFAULT_ALADIN_API_KEY}
                     className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:bg-white transition-all mb-4 font-mono"
                     value={aladinKeyInput}
@@ -813,7 +813,7 @@ const App: React.FC = () => {
                   />
                   <label className="text-xs text-slate-500 block mb-1.5">국립중앙도서관 API 키</label>
                   <input
-                    type="text"
+                    type="password"
                     placeholder={DEFAULT_NL_API_KEY}
                     className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:bg-white transition-all mb-4 font-mono"
                     value={nlKeyInput}
