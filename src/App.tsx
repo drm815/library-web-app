@@ -239,6 +239,9 @@ const App: React.FC = () => {
   const [aladinKeyInput, setAladinKeyInput] = useState('');
   const [nlKeyInput, setNlKeyInput] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [allRequests, setAllRequests] = useState<any[]>([]);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+  const [requestFilter, setRequestFilter] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>(
     () => JSON.parse(localStorage.getItem('recentSearches') || '[]')
   );
@@ -300,6 +303,21 @@ const App: React.FC = () => {
       alert('다운로드 중 오류가 발생했습니다.');
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const fetchAllRequests = async () => {
+    setIsLoadingRequests(true);
+    try {
+      const url = `${GAS_URL}?action=allRequests`;
+      const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`;
+      const res = await fetch(proxyUrl);
+      const data = await res.json();
+      if (Array.isArray(data)) setAllRequests(data);
+    } catch (e) {
+      alert('목록 로드 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoadingRequests(false);
     }
   };
 
@@ -674,6 +692,59 @@ const App: React.FC = () => {
                     {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
                     {isDownloading ? '다운로드 중...' : 'Excel 다운로드'}
                   </button>
+                </motion.div>
+
+                {/* 신청목록 뷰어 */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass rounded-3xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm font-bold text-slate-700">신청목록 조회</span>
+                    <button
+                      onClick={fetchAllRequests}
+                      disabled={isLoadingRequests}
+                      className="text-xs font-bold text-primary hover:text-sky-600 transition-colors flex items-center gap-1"
+                    >
+                      {isLoadingRequests ? <Loader2 size={12} className="animate-spin" /> : '새로고침'}
+                    </button>
+                  </div>
+                  {allRequests.length > 0 && (
+                    <input
+                      type="text"
+                      placeholder="이름, 제목, 학년 등으로 필터"
+                      className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:bg-white transition-all mb-3"
+                      value={requestFilter}
+                      onChange={e => setRequestFilter(e.target.value)}
+                    />
+                  )}
+                  {isLoadingRequests ? (
+                    <div className="text-center py-6 opacity-40">
+                      <Loader2 size={24} className="mx-auto animate-spin" />
+                    </div>
+                  ) : allRequests.length === 0 ? (
+                    <button
+                      onClick={fetchAllRequests}
+                      className="w-full py-3 text-sm text-slate-400 hover:text-primary transition-colors"
+                    >
+                      목록 불러오기
+                    </button>
+                  ) : (
+                    <div className="space-y-2 max-h-80 overflow-y-auto">
+                      {allRequests
+                        .filter(r => {
+                          if (!requestFilter) return true;
+                          const f = requestFilter.toLowerCase();
+                          return Object.values(r).some(v => String(v).toLowerCase().includes(f));
+                        })
+                        .map((r, i) => (
+                          <div key={i} className="bg-slate-50 rounded-xl px-3 py-2.5 border border-slate-100">
+                            <div className="flex justify-between items-start">
+                              <p className="text-xs font-bold text-slate-800 truncate flex-grow pr-2">{r['제목'] || r.title}</p>
+                              <span className="text-[10px] text-slate-400 flex-shrink-0">{r['구분'] || r.role}</span>
+                            </div>
+                            <p className="text-[10px] text-slate-500 mt-0.5">{r['이름'] || r.name} · {String(r['날짜'] || r.date).substring(0, 10)}</p>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </motion.div>
 
                 {/* API 키 설정 */}
