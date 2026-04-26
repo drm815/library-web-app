@@ -22,6 +22,7 @@ interface BookInfo {
   price: number;
   isbn: string;
   coverUrl: string;
+  link?: string;
   isExisting?: boolean;
   kdcCode?: string; // KDC 분류번호
   kdcName?: string; // KDC 분류명
@@ -133,7 +134,18 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, isRequesting, onRe
     <div className="flex flex-col justify-between py-1 flex-grow min-w-0">
       <div>
         <div className="flex justify-between gap-2">
-          <h3 className="text-sm font-bold truncate leading-tight flex-grow">{book.title}</h3>
+          {book.link ? (
+              <a
+                href={book.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-bold truncate leading-tight flex-grow hover:text-primary transition-colors"
+              >
+                {book.title}
+              </a>
+            ) : (
+              <h3 className="text-sm font-bold truncate leading-tight flex-grow">{book.title}</h3>
+            )}
           {book.isExisting ? (
             <Bookmark size={14} className="text-emerald-500 flex-shrink-0" />
           ) : (
@@ -368,6 +380,7 @@ const App: React.FC = () => {
         price: item.priceStandard,
         isbn: item.isbn13 || item.isbn,
         coverUrl: item.cover,
+        link: item.link?.replace(/&amp;/g, '&') || '',
         isExisting: false
       }));
 
